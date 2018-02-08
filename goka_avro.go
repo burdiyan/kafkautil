@@ -73,6 +73,7 @@ func (c *avroCodec) Encode(value interface{}) ([]byte, error) {
 				return err
 			}
 			id = int32(schemaID)
+			c.saveSchema(v.Schema(), id)
 			return nil
 		}, retry.Attempts(5)); err != nil {
 			return nil, err

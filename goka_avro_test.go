@@ -35,10 +35,12 @@ func (*fakeCodec) Decode(data []byte) (interface{}, error) {
 }
 
 type fakeRegisterer struct {
+	calls  int
 	lastID int32
 }
 
 func (f *fakeRegisterer) RegisterNewSchema(subject, schema string) (int, error) {
+	f.calls++
 	f.lastID = rand.Int31()
 
 	return int(f.lastID), nil
@@ -73,5 +75,13 @@ func TestWrapCodec(t *testing.T) {
 
 	if !(*(v.(*fakeRecord)) == fakeRecord{}) {
 		t.Errorf("record types don't match")
+	}
+
+	// Testing schema cache
+
+	c.Encode(new(fakeRecord))
+
+	if r.calls > 1 {
+		t.Errorf("registerer should not be called if schema is cached, calls: %d", r.calls)
 	}
 }
