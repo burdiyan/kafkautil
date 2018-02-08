@@ -46,10 +46,10 @@ func (f *fakeRegisterer) RegisterNewSchema(subject, schema string) (int, error) 
 	return int(f.lastID), nil
 }
 
-func TestWrapCodec(t *testing.T) {
+func TestRegistryCodec(t *testing.T) {
 	r := new(fakeRegisterer)
 
-	c := WrapCodec(new(fakeCodec), r, "test-subject")
+	c := RegistryCodec(new(fakeCodec), r, "test-subject")
 
 	data, err := c.Encode(new(fakeRecord))
 	if err != nil {

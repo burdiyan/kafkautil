@@ -22,9 +22,9 @@ type schemaRegisterer interface {
 	RegisterNewSchema(subject string, schema string) (int, error)
 }
 
-// WrapCodec wraps Goka codec for specific Avro type and encodes it using
+// RegistryCodec wraps Goka codec for specific Avro type and encodes it using
 // Confluent Schema Registry compatible wire format.
-func WrapCodec(c goka.Codec, rc schemaRegisterer, subject string) goka.Codec {
+func RegistryCodec(c goka.Codec, rc schemaRegisterer, subject string) goka.Codec {
 	return &avroCodec{
 		subject:     subject,
 		codec:       c,
