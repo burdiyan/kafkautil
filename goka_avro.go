@@ -22,7 +22,7 @@ type schemaRegisterer interface {
 	RegisterNewSchema(subject string, schema string) (int, error)
 }
 
-// WrapCodec wraps Goka codec for specify Avro type and encodes it using
+// WrapCodec wraps Goka codec for specific Avro type and encodes it using
 // Confluent Schema Registry compatible wire format.
 func WrapCodec(c goka.Codec, rc schemaRegisterer, subject string) goka.Codec {
 	return &avroCodec{
