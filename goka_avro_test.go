@@ -35,22 +35,33 @@ func (*fakeCodec) Decode(data []byte) (interface{}, error) {
 }
 
 type fakeRegisterer struct {
-	calls  int
-	lastID int32
+	calls   int
+	history map[string]int32
 }
 
 func (f *fakeRegisterer) RegisterNewSchema(subject, schema string) (int, error) {
 	f.calls++
-	f.lastID = rand.Int31()
 
-	return int(f.lastID), nil
+	if f.history == nil {
+		f.history = make(map[string]int32)
+	}
+
+	id := rand.Int31()
+	f.history[subject] = id
+
+	return int(id), nil
+}
+
+func (f *fakeRegisterer) lastID(subject string) int32 {
+	return f.history[subject]
 }
 
 func TestCodecWrapper(t *testing.T) {
 	r := new(fakeRegisterer)
 	cw := NewCodecWrapper(r)
+	subj := "test-subject"
 
-	c := cw.WrapCodec(new(fakeCodec), "test-subject")
+	c := cw.WrapCodec(new(fakeCodec), subj)
 
 	data, err := c.Encode(new(fakeRecord))
 	if err != nil {
@@ -61,8 +72,8 @@ func TestCodecWrapper(t *testing.T) {
 		t.Errorf("missing magic byte %v", data)
 	}
 
-	if id := binary.BigEndian.Uint32(data[1:5]); int32(id) != r.lastID {
-		t.Errorf("expected schema ID: %d, got: %d", r.lastID, id)
+	if id := binary.BigEndian.Uint32(data[1:5]); int32(id) != r.lastID(subj) {
+		t.Errorf("expected schema ID: %d, got: %d", r.lastID(subj), id)
 	}
 
 	if string(data[5:]) != "serialized-fake-record" {
