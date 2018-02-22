@@ -22,15 +22,29 @@ type schemaRegisterer interface {
 	RegisterNewSchema(subject string, schema string) (int, error)
 }
 
-// RegistryCodec wraps Goka codec for specific Avro type and encodes it using
-// Confluent Schema Registry compatible wire format.
-func RegistryCodec(c goka.Codec, rc schemaRegisterer, subject string) goka.Codec {
+// CodecWrapper wraps Avro goka.Codec to be compatible with
+// Confluent Schema registry wire format.
+type CodecWrapper interface {
+	WrapCodec(c goka.Codec, subject string) goka.Codec
+}
+
+type codecWrapper struct {
+	rc schemaRegisterer
+}
+
+// WrapCodec implements CodecWrapper.
+func (cw *codecWrapper) WrapCodec(c goka.Codec, subject string) goka.Codec {
 	return &avroCodec{
 		subject:     subject,
 		codec:       c,
-		client:      rc,
+		client:      cw.rc,
 		schemaCache: make(map[string]int32),
 	}
+}
+
+// NewCodecWrapper creates new CodecWrapper using provided Schema Registry client.
+func NewCodecWrapper(rc schemaRegisterer) CodecWrapper {
+	return &codecWrapper{rc: rc}
 }
 
 type avroCodec struct {
