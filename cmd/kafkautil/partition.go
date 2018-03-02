@@ -11,6 +11,7 @@ import (
 var partitionCmd = &cobra.Command{
 	Use:   "partition <value> <total-partitions> [flags]",
 	Short: "Get partition number for some value",
+	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		h := kafkautil.MurmurHasher()
 
